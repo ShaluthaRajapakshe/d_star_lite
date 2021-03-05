@@ -53,7 +53,13 @@ using std::string;
 struct cells{
     int currentCell;
     float fCost;
-};      
+};  
+
+struct node{
+    int cell_index;
+    float g_value;
+    float rhs;
+};
 
 namespace PathPlanners_all{
   
@@ -71,9 +77,16 @@ public:
     double step_size_, min_dist_from_robot_;
     bool initialized_;
     int width;int height;
+
+    
+
+
     
     costmap_2d::Costmap2DROS* costmap_ros_;
     costmap_2d::Costmap2D* costmap_;
+
+    base_local_planner::WorldModel* world_model_;
+    double footprintCost(double x_i, double y_i, double theta_i);
 
     // Base functions for Planners
     void getCoordinate (float& x, float& y);
@@ -81,12 +94,14 @@ public:
     void mapToWorld(double mx, double my, double& wx, double& wy);
     void add_open(multiset<cells> & OPL, int neighborCell, int goalCell, float g_score[],int n);
    
+    
+
     bool validate(float x, float y);
     bool isValid(int startCell,int goalCell); 
     bool isFree(int CellID); //returns true if the cell is Free
 
     int convertToCellIndex (float x, float y);
-    int getIndex(int i,int j){return (i*width)+j;}
+    int getIndex(int i,int j){return (i*width)+j;}  //occupancy grid map eka tiyenne list ekak wdht..meken list eke kothanada tiyenne kiyala denaw
     int getRow(int index){return index/width;}
     int getCol(int index){return index%width;}
     
@@ -98,6 +113,26 @@ public:
     vector<int> Dijkstra(int startCell, int goalCell, float g_score[]);
     vector<int> BFS(int startCell, int goalCell, float g_score[]);
     vector<int> constructPath(int startCell, int goalCell, float g_score[]);
+
+
+    //D-star-lite  related things
+    vector<int> D_star_lite(int startcell_index, int goalcell_index, float g_and_rhs[][2]);
+
+    vector <pair<node, pair<double, double>>> OPL;
+    std::pair<node, std::pair<double, double>> OPL_top_key;
+
+    int currentcell_index;
+    int start_current_cell_index;
+    pair <double, double> k_old;
+    pair <double, double> k_new;
+
+    std::pair<node, std::pair<double, double>> k_new_cell;
+
+    void ComputeShortestPath(node start,node goal,float g_and_rhs[][2], int k_m);
+    pair<node,pair<double, double>> CalculateKey(node current_cell,node start_current_cell,float g_and_rhs[][2], int k_m);
+    pair<node, pair<double, double>> getTopKey();
+    vector <int> constructPath_D_star_lite(int start_current_cell_index,int goal_cell_index, float g_and_rhs[][2]);
+
     
     float heuristic(int cellID, int goalCell, int n){
         int x1=getRow(goalCell);int y1=getCol(goalCell);int x2=getRow(cellID);int y2=getCol(cellID);
@@ -117,6 +152,28 @@ public:
         else
             return dx+dy+(sqrt(2)-2)*min (dx,dy);
     }
+
+    float heuristic_from_s(int current_cell_index,int start_current_cell_index){  //This cell id means list eke row by row dammama keeweniyada kiyana eka
+        int x1 = getRow(current_cell_index);
+        int y1 = getCol(current_cell_index);
+        int x2 = getRow(start_current_cell_index);
+        int y2 = getCol(start_current_cell_index);
+
+        int dx = abs(x1 - x2);
+        int dy =abs(y1 - y2);
+        // cout <<"dx "<< dx <<endl;
+        // cout << "dy "<< dy <<endl;
+        // cout << dx+dy <<endl;
+        return dx+dy;//Considering Manhatten Distance
+}
+
+
+
+
+
 };
 };
 #endif
+
+   
+
