@@ -121,6 +121,8 @@ public:
     vector <pair<node, pair<double, double>>> OPL;
     std::pair<node, std::pair<double, double>> OPL_top_key;
 
+    int k_m = 0;
+
     int currentcell_index;
     int start_current_cell_index;
     pair <double, double> k_old;
