@@ -121,12 +121,11 @@ public:
     vector <pair<node, pair<double, double>>> OPL;
     std::pair<node, std::pair<double, double>> OPL_top_key;
 
-    int k_m = 0;
-
     int currentcell_index;
     int start_current_cell_index;
     pair <double, double> k_old;
     pair <double, double> k_new;
+    int k_m = 0;
 
     std::pair<node, std::pair<double, double>> k_new_cell;
 
@@ -134,7 +133,7 @@ public:
     pair<node,pair<double, double>> CalculateKey(node current_cell,node start_current_cell,float g_and_rhs[][2], int k_m);
     pair<node, pair<double, double>> getTopKey();
     vector <int> constructPath_D_star_lite(int start_current_cell_index,int goal_cell_index, float g_and_rhs[][2]);
-
+    void UpdateVertex(node predecessor, node start, float g_and_rhs[][2], int k_m);
     
     float heuristic(int cellID, int goalCell, int n){
         int x1=getRow(goalCell);int y1=getCol(goalCell);int x2=getRow(cellID);int y2=getCol(cellID);

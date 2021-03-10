@@ -71,7 +71,7 @@ namespace PathPlanners_all
 						max_cost = cost;
 					}
 
-					if (cost <= 252)
+					if (cost <= 252) 
 					{ //220
 						OGM[iy * width + ix] = true;
 						// cout <<"Traversable"<< ix<<","<<iy<<"   cost:"<<cost;
@@ -329,13 +329,14 @@ namespace PathPlanners_all
 
 		clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time1);
 
-		bestPath = AStar(startCell, goalCell, g_score);
-		//bestPath = D_star_lite(startCell,goalCell, g_and_rhs);
+		// bestPath = AStar(startCell, goalCell, g_score);
+		bestPath = D_star_lite(startCell,goalCell, g_and_rhs);
 		// bestPath=Dijkstra(startCell, goalCell,  g_score);
 		// bestPath=BFS(startCell, goalCell,  g_score);
 		// bestPath=JPS(startCell,goalCell,g_score);
-
+		cout << "I'm here" ;
 		clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time2);
+		OPL.clear();
 
 		cout << " Time taken to generate path= " << (diff(time1, time2).tv_sec) * 1e3 + (diff(time1, time2).tv_nsec) * 1e-6 << " microseconds" << endl;
 
@@ -505,27 +506,27 @@ namespace PathPlanners_all
 
 		//we have to start from goal and go to the minimum cost cell from there..like wise we can calculate the path
 
-		if (g_and_rhs[startCell_index][0] != infinity)
-		{
-			bestPath = constructPath_D_star_lite(startCell_index, goalCell_index, g_and_rhs); //have to check this function
-			return bestPath;
-		}
+		// if (g_and_rhs[startCell_index][0] != infinity)
+		// {
+		bestPath = constructPath_D_star_lite(startCell_index, goalCell_index, g_and_rhs); //have to check this function
+		return bestPath;
+		// }
 
-		else
-		{
-			cout << "Path not found!" << endl;
-			return emptyPath;
-		}
+		// else
+		// {
+		// 	cout << "Path not found!" << endl;
+		// 	return emptyPath;
+		// }
 
 		//   cout << "Path Calculated" << endl;
 
 		//   return bestPath;
 	}
 
-	void ComputeShortestPath(node start, node goal, float g_and_rhs[][2], int k_m)
+	void PathPlannersROS::ComputeShortestPath(node start, node goal, float g_and_rhs[][2], int k_m)
 	{
 
-		while ((g_and_rhs[start.cell_index][0] != g_and_rhs[start.cell_index][1]) || getTopKey().second < CalculateKey(start, start, g_and_rhs, k_m).second)
+		while ((g_and_rhs[start.cell_index][0] < g_and_rhs[start.cell_index][1]) || getTopKey().second < CalculateKey(start, start, g_and_rhs, k_m).second)
 		{
 			//since the getTopKey function is called in the while loop,  OPL_top_key is automatically calculated there
 			k_old = OPL_top_key.second;
@@ -587,11 +588,12 @@ namespace PathPlanners_all
 				//Updating the current cell
 				if (currentcell_index != goal.cell_index)
 				{
-					neighbour_succesors = getNeighbour(currentcell_index);
+					std::vector<int> neighbour_succesors_of_current_cell;
+					neighbour_succesors_of_current_cell = getNeighbour(currentcell_index);
 					float min_rhs = infinity;
-					for (uint j = 0; j < neighbour_succesors.size(); j++)
+					for (uint j = 0; j < neighbour_succesors_of_current_cell.size(); j++)
 					{
-						min_rhs = std::min(min_rhs, g_and_rhs[neighbour_succesors[j]][0] + getMoveCost(currentcell_index, neighbour_succesors[j]));
+						min_rhs = std::min(min_rhs, g_and_rhs[neighbour_succesors_of_current_cell[j]][0] + getMoveCost(currentcell_index, neighbour_succesors_of_current_cell[j]));
 					}
 					g_and_rhs[currentcell_index][1] = min_rhs;
 				}
@@ -621,10 +623,10 @@ namespace PathPlanners_all
 			}
 		}
 
-		// g_and_rhs[start.cell_index][0] = g_and_rhs[start.cell_index][1];
+		g_and_rhs[start.cell_index][0] = g_and_rhs[start.cell_index][1];
 	}
 
-	void UpdateVertex(cells predecessor, cells start, float g_and_rhs[][2], int k_m)
+	void PathPlannersROS::UpdateVertex(node predecessor, node start, float g_and_rhs[][2], int k_m)
 	{
 
 		bool if_in_OPL = false;
@@ -749,6 +751,8 @@ namespace PathPlanners_all
 			// cout << currentCell<< endl;
 			path.insert(path.begin() + path.size(), currentCell);
 		}
+
+		// std::cout<< 'out of while';
 
 		for (uint i = 0; i < path.size(); i++)
 		{
